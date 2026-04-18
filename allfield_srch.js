@@ -1,6 +1,6 @@
 (function () {
   'use strict';
-
+// 全フィールドを対象にor検索をする窓を付ける件数無制限対応
   console.log('検索UI 真・最終完全版');
 
   const APP_ID = kintone.app.getId();
