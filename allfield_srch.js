@@ -12,9 +12,6 @@
   const MODAL_POS_KEY = 'SEARCH_MODAL_POS_' + APP_ID;
   const HISTORY_KEY = 'SEARCH_HISTORY_' + APP_ID;
 const LAST_WORD_KEY = 'LAST_SEARCH_WORD_' + APP_ID;
-const FOCUS_KEY = 'KINTONE_SEARCH_FOCUS_LOCK_' + APP_ID;
-let focusExecuted = false;
-
 //　const VIEW_ID_KEY = 'LAST_VIEW_ID_' + APP_ID;
 
   const MAX_HISTORY = 20;
@@ -26,11 +23,12 @@ let focusExecuted = false;
 
   /* =========================
    * ログインユーザー確認
-   * ========================= */
+   * ========================= 
   function isAllowedUser() {
     const loginUser = kintone.getLoginUser();
     return ADMIN_USERS.includes(loginUser.code);
   }
+*/
 
   /* =========================
    * 共通
@@ -316,7 +314,6 @@ const search = (word) => {
   const raw = normalize(word);
   const viewId = getViewId();
 
-
   // 🔥 空検索：絞り込みリセット（履歴は消さない）
 if (!raw) {
   input.value = '';
@@ -334,8 +331,6 @@ if (!raw) {
   // 通常検索
   saveHistory(raw);
   localStorage.setItem(LAST_WORD_KEY, raw);
-// ★追加
-sessionStorage.setItem(FOCUS_KEY, '1');
 
   const safe = raw.replace(/\\/g, '\\\\').replace(/"/g, '\\"');
   const mode = localStorage.getItem(MODE_STORAGE_KEY) || 'OR';
@@ -508,43 +503,27 @@ sessionStorage.setItem(FOCUS_KEY, '1');
 	}
 
 	// フォーカス強制（61重要）
-kintone.events.on('app.record.index.show', async function () {
+const focusFlag = new URLSearchParams(location.search).get('focusK') === '1';
 
-  if (!window.isAllowedUser || !window.isAllowedUser()) return;
+setTimeout(() => {
 
-  if (document.getElementById(INPUT_ID)) return;
-
-  ALL_FIELDS = await getFields();
-
-  const space = kintone.app.getHeaderMenuSpaceElement();
-  createUI(space);
-
-  // ★ここにフォーカス処理を入れる
-  if (focusExecuted) return;
-
-  const shouldFocus =
-    sessionStorage.getItem(FOCUS_KEY) === '1';
-
-  if (!shouldFocus) return;
-
-  const input = document.getElementById(INPUT_ID);
-  if (!input) return;
-
-  focusExecuted = true;
-  sessionStorage.removeItem(FOCUS_KEY);
-
-  setTimeout(() => {
-
+  if (focusFlag) {
     input.focus();
 
     setTimeout(() => {
       input.setSelectionRange(input.value.length, input.value.length);
     }, 50);
 
-  }, 300);
+    setTimeout(() => {
+      const url = new URL(location.href);
+      url.searchParams.delete('focusK');
+      history.replaceState(null, '', url);
+    }, 0);
+  }
 
-});
-
+}, 500);
+  
+}
 
   function createButton(text) {
     const btn = document.createElement('button');
@@ -554,6 +533,20 @@ kintone.events.on('app.record.index.show', async function () {
     return btn;
   }
 
+  kintone.events.on('app.record.index.show', async function () {
+/*	const currentViewId = getViewId();
+if (currentViewId) {
+  localStorage.setItem(VIEW_ID_KEY, currentViewId);
+}
+*/
 
+    if (!window.isAllowedUser || !window.isAllowedUser()) return;
+    if (document.getElementById(INPUT_ID)) return;
+
+    ALL_FIELDS = await getFields();
+
+    const space = kintone.app.getHeaderMenuSpaceElement();
+    createUI(space);
+  });
 
 })();
