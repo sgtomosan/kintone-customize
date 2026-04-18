@@ -21,14 +21,7 @@ const LAST_WORD_KEY = 'LAST_SEARCH_WORD_' + APP_ID;
   let ALL_FIELDS = [];
   let SELECTED_FIELDS = [];
 
-  /* =========================
-   * ログインユーザー確認
-   * ========================= 
-  function isAllowedUser() {
-    const loginUser = kintone.getLoginUser();
-    return ADMIN_USERS.includes(loginUser.code);
-  }
-*/
+
 
   /* =========================
    * 共通
