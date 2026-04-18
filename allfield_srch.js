@@ -316,7 +316,8 @@ if (!raw) {
     `${location.pathname}?` +
     (viewId ? `view=${viewId}&` : '') +
     `query=`;   // ←🔥これが重要（空で上書き）
-
+	
+  input.focus();  // ← ここに追加
   location.href = url;
   return;
 }
