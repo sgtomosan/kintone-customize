@@ -1,7 +1,7 @@
 (function () {
   'use strict';
 
-  console.log('検索UI 真・最終完全版');
+  console.log('検索UI 最終完全版');
 
   const APP_ID = kintone.app.getId();
 
@@ -280,7 +280,7 @@ if (e.key === 'Enter') {
     const input = document.createElement('input');
     input.id = INPUT_ID;
     input.className = 'gaia-ui-input';
-    input.placeholder = '検索（Enter）';
+    input.placeholder = '文字検索（Enter）';
     input.style.height = '44px';
 
     const modeToggle = document.createElement('select');
