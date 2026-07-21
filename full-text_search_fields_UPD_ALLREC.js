@@ -125,7 +125,7 @@
 
     const btn = document.createElement('button');
     btn.id = 'bulk-update-btn';
-    btn.textContent = '全文検索を全件更新V2';
+    btn.textContent = '全文検索を全件更新V3';
     btn.style.marginLeft = '10px';
 
     btn.onclick = async function () {
@@ -141,16 +141,19 @@
       btn.disabled = true;
       btn.textContent = '更新中...';
 
-      try {
-        await bulkUpdateAllRecords(mode);
-        alert('更新完了しました');
-      } catch (e) {
-        console.error('bulk update error:', e);
-        alert('更新中にエラーが発生しました');
-      }
+try {
+  await bulkUpdateAllRecords(mode);
+  alert('更新完了しました');
+} catch (e) {
+  console.error('bulk update error:', e);
+  if (e?.errors) {
+    console.error('詳細エラー:', JSON.stringify(e.errors, null, 2));
+  }
+  alert('更新中にエラーが発生しました。詳細はコンソールをご確認ください。');
+}
 
       btn.disabled = false;
-      btn.textContent = '全文検索を全件更新';
+      btn.textContent = '全文検索を全件更新V3';
     };
 
     space.appendChild(btn);
