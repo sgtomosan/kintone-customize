@@ -125,7 +125,7 @@
 
     const btn = document.createElement('button');
     btn.id = 'bulk-update-btn';
-    btn.textContent = '全文検索を全件更新V3';
+    btn.textContent = '全文検索を全件更新';
     btn.style.marginLeft = '10px';
 
     btn.onclick = async function () {
@@ -153,7 +153,7 @@ try {
 }
 
       btn.disabled = false;
-      btn.textContent = '全文検索を全件更新V3';
+      btn.textContent = '全文検索を全件更新';
     };
 
     space.appendChild(btn);
