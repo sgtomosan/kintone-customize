@@ -236,7 +236,7 @@ try {
       const fulltextValue = texts
         .map(v => buildSuffixTokens(v, 10))
         .join(' ')
-        .substring(0, 10000); // 安全上限
+        .substring(0, 9999); // 安全上限
 
       return {
         id: rec.$id.value,
