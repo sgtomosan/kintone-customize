@@ -5,8 +5,6 @@
    * 設定
    *************************************************/
   const FULLTEXT_FIELD = '全文検索用';
-  const INVOICE_FIELD = '送り状名';
-  const INVOICE_MAX_BYTES = 32;
 
   function isAllowedUser() {
     const loginUser = kintone.getLoginUser();
@@ -57,27 +55,6 @@
     }
 
     return fieldExistenceCache;
-  }
-
-  /*************************************************
-   * 32バイトトリム関数（UTF-8対応）
-   *************************************************/
-  function trimByBytes(str, maxBytes) {
-    if (!str) return str;
-
-    let bytes = 0;
-    let result = '';
-
-    for (const char of str) {
-      const charBytes = new TextEncoder().encode(char).length;
-
-      if (bytes + charBytes > maxBytes) break;
-
-      result += char;
-      bytes += charBytes;
-    }
-
-    return result;
   }
 
   /*************************************************
@@ -148,7 +125,7 @@
 
     const btn = document.createElement('button');
     btn.id = 'bulk-update-btn';
-    btn.textContent = '全文検索を全件更新';
+    btn.textContent = '全文検索を全件更新V2';
     btn.style.marginLeft = '10px';
 
     btn.onclick = async function () {
@@ -257,22 +234,11 @@
         .join(' ')
         .substring(0, 10000); // 安全上限
 
-      /*************************************************
-       * 送り状名を32バイト制限
-       *************************************************/
-      const invoiceValue = trimByBytes(
-        rec[INVOICE_FIELD]?.value || '',
-        INVOICE_MAX_BYTES
-      );
-
       return {
         id: rec.$id.value,
         record: {
           [FULLTEXT_FIELD]: {
             value: fulltextValue
-          },
-          [INVOICE_FIELD]: {
-            value: invoiceValue
           }
         }
       };
