@@ -1,6 +1,6 @@
 (function () {
   'use strict';
-//　いろいろな項目を検索できるような窓を勝手に追加（選択可能）
+//　いろいろな項目を検索できるような窓を勝手に追加（フィールド選択可能）
   console.log('検索UI 真・最終完全版');
 
   const APP_ID = kintone.app.getId();
