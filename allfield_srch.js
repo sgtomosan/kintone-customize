@@ -256,10 +256,10 @@
     input.style.height = '42px';
 
     const btnOpen = createButton('検索設定');
-    btnOpen.style.height = '42px';
+    btnOpen.style.height = '44px';
     btnOpen.style.width = 'auto';              // ★ここを 'auto' にして固定幅を解除
-    btnOpen.style.minWidth = '80px';           // ★最低幅を確保
-    btnOpen.style.padding = '0 8px 2px 8px'; // ★左右にゆとりを持たせる
+    btnOpen.style.minWidth = '90px';           // ★最低幅を確保
+    btnOpen.style.padding = '0 6px 2px 6px'; // ★左右にゆとりを持たせる
     btnOpen.style.margin = '0 0 0 6px';
     btnOpen.style.verticalAlign = 'top';
     
