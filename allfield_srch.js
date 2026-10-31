@@ -160,7 +160,7 @@
       background: '#fff',
       border: '1px solid #ccc',
       zIndex: 9999,
-      maxHeight: '200px',
+      maxHeight: '240px',
       overflowY: 'auto',
       display: 'none'
     });
@@ -249,7 +249,7 @@
     input.id = INPUT_ID;
     input.className = 'gaia-ui-input';
     input.placeholder = '検索（Enter）';
-    input.style.height = '44px';
+    input.style.height = '42px';
 
     const btnOpen = createButton('検索設定');
     btnOpen.style.height = '44px';
