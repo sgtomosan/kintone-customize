@@ -63,7 +63,7 @@
       position: 'fixed',
       top: savedPos ? savedPos.top : '100px',
       left: savedPos ? savedPos.left : '100px',
-      width: '450px',
+      width: '460px',
       background: '#fff',
       border: '1px solid #ccc',
       zIndex: 9999,
@@ -252,7 +252,11 @@
     input.style.height = '44px';
 
     const btnOpen = createButton('検索設定');
-
+    btnOpen.style.height = '44px';
+    btnOpen.style.padding = '0 16px';
+    btnOpen.style.margin = '0 0 0 6px';
+    btnOpen.style.verticalAlign = 'top';
+    
     space.appendChild(input);
     space.appendChild(btnOpen);
 
