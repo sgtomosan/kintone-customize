@@ -256,7 +256,7 @@
     input.style.height = '42px';
 
     const btnOpen = createButton('検索設定');
-    btnOpen.style.height = '44px';
+    btnOpen.style.height = '48px';
     btnOpen.style.width = 'auto';              // ★ここを 'auto' にして固定幅を解除
     btnOpen.style.minWidth = '90px';           // ★最低幅を確保
     btnOpen.style.padding = '0 6px 2px 6px'; // ★左右にゆとりを持たせる
@@ -310,7 +310,7 @@
     function updateButtonTooltip() {
       const currentName = localStorage.getItem(CURRENT_PRESET_KEY);
       if (currentName) {
-        btnOpen.title = `現在適用中のプリセット: ${currentName}`;
+        btnOpen.title = `適用中のプリセット: ${currentName}`;
       } else {
         btnOpen.title = '検索設定 (プリセット未選択)';
       }
