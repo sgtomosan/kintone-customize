@@ -74,6 +74,7 @@
     const header = document.createElement('div');
     header.textContent = '検索設定';
     Object.assign(header.style, {
+      width: '80px',
       padding: '6px 10px',
       background: '#eee',
       cursor: 'move',
@@ -252,7 +253,7 @@
     input.style.height = '42px';
 
     const btnOpen = createButton('検索設定');
-    btnOpen.style.height = '44px';
+    btnOpen.style.height = '46px';
     btnOpen.style.padding = '0 16px';
     btnOpen.style.margin = '0 0 0 6px';
     btnOpen.style.verticalAlign = 'top';
@@ -452,7 +453,7 @@
     const listArea = document.createElement('div');
     listArea.style.border = '1px solid #ddd';
     listArea.style.padding = '6px';
-    listArea.style.maxHeight = '230px';
+    listArea.style.maxHeight = '330px';
     listArea.style.overflowY = 'auto';
 
     function renderList() {
@@ -679,7 +680,13 @@
     btn.style.margin = '0px';
     btn.style.padding = '0 8px 3px 8px';
     btn.style.height = '34px';
+    btn.style.width = '80px';
     btn.style.boxSizing = 'border-box';
+// 上下左右の中央揃えを強制
+    btn.style.display = 'inline-flex';
+    btn.style.alignItems = 'center';
+    btn.style.justifyContent = 'center';
+    btn.style.lineHeight = '1';
     return btn;
   }
 
