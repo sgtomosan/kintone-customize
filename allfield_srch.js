@@ -1,15 +1,14 @@
 (function () {
   'use strict';
-  // いろいろな項目を検索できるような窓を勝手に追加（フィールド選択可能）
-  // モーダルを表示してプリセットの保存が可能
 
-  console.log('検索UI 真・最終完全版');
+  console.log('検索UI 真・最終完全版 (拡張レイアウト対応)');
 
   const APP_ID = kintone.app.getId();
 
   const INPUT_ID = 'ALLSearchInput';
   const FIELD_STORAGE_KEY = 'SEARCH_TARGET_FIELDS_' + APP_ID;
   const PRESET_STORAGE_KEY = 'SEARCH_PRESETS_' + APP_ID;
+  const CURRENT_PRESET_KEY = 'SEARCH_CURRENT_PRESET_' + APP_ID;
   const MODE_STORAGE_KEY = 'SEARCH_MODE_' + APP_ID;
   const MODAL_POS_KEY = 'SEARCH_MODAL_POS_' + APP_ID;
   const HISTORY_KEY = 'SEARCH_HISTORY_' + APP_ID;
@@ -23,7 +22,7 @@
   let SELECTED_FIELDS = [];
 
   /* =========================
-   * 共通
+   * 共通処理
    * ========================= */
   function normalize(str) {
     return str.replace(/ /g, ' ').trim();
@@ -53,13 +52,8 @@
       );
   }
 
-  function shouldFocus() {
-    const params = new URLSearchParams(location.search);
-    return params.get('focusK') === '1';
-  }
-
   /* =========================
-   * モーダル
+   * モーダル生成
    * ========================= */
   function createModal() {
     const modal = document.createElement('div');
@@ -69,7 +63,7 @@
       position: 'fixed',
       top: savedPos ? savedPos.top : '100px',
       left: savedPos ? savedPos.left : '100px',
-      width: '440px',
+      width: '450px',
       background: '#fff',
       border: '1px solid #ccc',
       zIndex: 9999,
@@ -79,7 +73,6 @@
     // ===== ヘッダー =====
     const header = document.createElement('div');
     header.textContent = '検索設定';
-
     Object.assign(header.style, {
       padding: '6px 10px',
       background: '#eee',
@@ -96,7 +89,6 @@
     closeBtn.style.cursor = 'pointer';
     closeBtn.style.fontWeight = 'bold';
     closeBtn.style.fontSize = '16px';
-
     closeBtn.onclick = () => modal.style.display = 'none';
 
     header.appendChild(closeBtn);
@@ -105,12 +97,11 @@
     // ===== 本体 =====
     const body = document.createElement('div');
     body.style.padding = '10px';
-    body.style.maxHeight = '450px';
+    body.style.maxHeight = '480px';
     body.style.overflow = 'auto';
-
     modal.appendChild(body);
 
-    // ===== ドラッグ =====
+    // ===== ドラッグ移動 =====
     let isDragging = false, offsetX, offsetY;
 
     header.onmousedown = (e) => {
@@ -136,13 +127,11 @@
       }
     });
 
-    // ===== ESCで閉じる =====
     document.addEventListener('keydown', (e) => {
       if (e.key === 'Escape') modal.style.display = 'none';
     });
 
     document.body.appendChild(modal);
-
     return body;
   }
 
@@ -158,16 +147,14 @@
     if (history.length > MAX_HISTORY) {
       history = history.slice(0, MAX_HISTORY);
     }
-
     localStorage.setItem(HISTORY_KEY, JSON.stringify(history));
   }
 
   /* =========================
-   * サジェスト
+   * サジェスト機能
    * ========================= */
   function createSuggestBox(input, searchFunc) {
     const box = document.createElement('div');
-
     Object.assign(box.style, {
       position: 'absolute',
       background: '#fff',
@@ -179,7 +166,6 @@
     });
 
     document.body.appendChild(box);
-
     let selectedIndex = -1;
 
     function render(keyword = '') {
@@ -194,13 +180,11 @@
         const div = document.createElement('div');
         div.textContent = item;
         div.style.padding = '5px';
-
         div.onmouseover = () => highlight(i);
         div.onclick = () => {
           input.value = item;
           searchFunc(item);
         };
-
         box.appendChild(div);
       });
 
@@ -210,7 +194,6 @@
     function highlight(index) {
       const children = box.children;
       Array.from(children).forEach(c => c.style.background = '');
-
       if (children[index]) {
         children[index].style.background = '#eee';
         selectedIndex = index;
@@ -227,21 +210,18 @@
 
     input.addEventListener('keydown', (e) => {
       const items = box.children;
-
       if (e.key === 'ArrowDown') {
         selectedIndex++;
         if (selectedIndex >= items.length) selectedIndex = 0;
         highlight(selectedIndex);
         e.preventDefault();
       }
-
       if (e.key === 'ArrowUp') {
         selectedIndex--;
         if (selectedIndex < 0) selectedIndex = items.length - 1;
         highlight(selectedIndex);
         e.preventDefault();
       }
-
       if (e.key === 'Enter') {
         if (selectedIndex >= 0 && items[selectedIndex]) {
           const val = items[selectedIndex].textContent;
@@ -276,25 +256,19 @@
     space.appendChild(input);
     space.appendChild(btnOpen);
 
+    // 検索処理
     const search = (word) => {
       const raw = normalize(word);
       const viewId = getViewId();
 
-      // 空検索：絞り込みリセット
       if (!raw) {
         input.value = '';
         localStorage.removeItem(LAST_WORD_KEY);
-
-        const url =
-          `${location.pathname}?` +
-          (viewId ? `view=${viewId}&` : '') +
-          `query=`;
-
+        const url = `${location.pathname}?` + (viewId ? `view=${viewId}&` : '') + `query=`;
         location.href = url;
         return;
       }
 
-      // 通常検索
       saveHistory(raw);
       localStorage.setItem(LAST_WORD_KEY, raw);
 
@@ -315,7 +289,7 @@
 
     createSuggestBox(input, search);
 
-    // ===== モーダル内要素 =====
+    // モーダル設定
     const modalBody = createModal();
     modalBody.parentNode.style.display = 'none';
 
@@ -324,21 +298,136 @@
       modal.style.display = modal.style.display === 'none' ? 'block' : 'none';
     };
 
-    // --- 1行目: AND/OR 条件設定エリア ---
-    const modeSettingArea = document.createElement('div');
-    modeSettingArea.style.marginBottom = '8px';
-    modeSettingArea.style.display = 'flex';
-    modeSettingArea.style.alignItems = 'center';
-    modeSettingArea.style.gap = '8px';
+    // ツールチップ更新関数
+    function updateButtonTooltip() {
+      const currentName = localStorage.getItem(CURRENT_PRESET_KEY);
+      if (currentName) {
+        btnOpen.title = `現在適用中のプリセット: ${currentName}`;
+      } else {
+        btnOpen.title = '検索設定 (プリセット未選択)';
+      }
+    }
 
-    const modeLabel = document.createElement('span');
-    modeLabel.textContent = '検索条件:';
-    modeLabel.style.fontSize = '12px';
-    modeLabel.style.fontWeight = 'bold';
+    // ----------------------------------------------------
+    // 【1段目】プリセット選択 / 保存 / 削除
+    // ----------------------------------------------------
+    const row1 = document.createElement('div');
+    row1.style.display = 'flex';
+    row1.style.gap = '6px';
+    row1.style.marginBottom = '6px';
+
+    const presetSelect = document.createElement('select');
+    presetSelect.className = 'gaia-ui-input';
+    presetSelect.style.flex = '1';
+    presetSelect.style.height = '34px';
+
+    const btnSavePreset = createButton('保存');
+    btnSavePreset.style.flex = '1';
+    const btnDeletePreset = createButton('削除');
+    btnDeletePreset.style.flex = '1';
+
+    row1.appendChild(presetSelect);
+    row1.appendChild(btnSavePreset);
+    row1.appendChild(btnDeletePreset);
+
+    // ----------------------------------------------------
+    // 【2段目】全選択 / 全解除 / 初期状態
+    // ----------------------------------------------------
+    const row2 = document.createElement('div');
+    row2.style.display = 'flex';
+    row2.style.gap = '6px';
+    row2.style.marginBottom = '8px';
+
+    const btnAll = createButton('全選択');
+    btnAll.style.flex = '1';
+    const btnNone = createButton('全解除');
+    btnNone.style.flex = '1';
+    const btnReset = createButton('初期状態');
+    btnReset.style.flex = '1';
+
+    row2.appendChild(btnAll);
+    row2.appendChild(btnNone);
+    row2.appendChild(btnReset);
+
+    // ----------------------------------------------------
+    // 【3段目】フィールド検索 + [ ]ソート [ ]チェック有 [ ]未チェック
+    // ----------------------------------------------------
+    const row3 = document.createElement('div');
+    row3.style.display = 'flex';
+    row3.style.alignItems = 'center';
+    row3.style.gap = '8px';
+    row3.style.marginBottom = '6px';
+
+    const filterInput = document.createElement('input');
+    filterInput.placeholder = 'フィールド検索';
+    filterInput.className = 'gaia-ui-input';
+    filterInput.style.flex = '1';
+    filterInput.style.height = '32px';
+
+    const optArea = document.createElement('div');
+    optArea.style.display = 'flex';
+    optArea.style.alignItems = 'center';
+    optArea.style.gap = '6px';
+    optArea.style.fontSize = '12px';
+    optArea.style.whiteSpace = 'nowrap';
+
+    // ソート
+    const cbSort = document.createElement('input');
+    cbSort.type = 'checkbox';
+    cbSort.id = 'cb_search_sort';
+    const lblSort = document.createElement('label');
+    lblSort.htmlFor = 'cb_search_sort';
+    lblSort.textContent = 'ソート';
+
+    // チェック有
+    const cbChecked = document.createElement('input');
+    cbChecked.type = 'checkbox';
+    cbChecked.id = 'cb_search_checked';
+    const lblChecked = document.createElement('label');
+    lblChecked.htmlFor = 'cb_search_checked';
+    lblChecked.textContent = 'チェック有';
+
+    // 未チェック
+    const cbUnchecked = document.createElement('input');
+    cbUnchecked.type = 'checkbox';
+    cbUnchecked.id = 'cb_search_unchecked';
+    const lblUnchecked = document.createElement('label');
+    lblUnchecked.htmlFor = 'cb_search_unchecked';
+    lblUnchecked.textContent = '未チェック';
+
+    // 「チェック有」と「未チェック」は排他
+    cbChecked.onchange = () => {
+      if (cbChecked.checked) cbUnchecked.checked = false;
+      renderList();
+    };
+    cbUnchecked.onchange = () => {
+      if (cbUnchecked.checked) cbChecked.checked = false;
+      renderList();
+    };
+    cbSort.onchange = () => renderList();
+    filterInput.oninput = () => renderList();
+
+    optArea.appendChild(cbSort);
+    optArea.appendChild(lblSort);
+    optArea.appendChild(cbChecked);
+    optArea.appendChild(lblChecked);
+    optArea.appendChild(cbUnchecked);
+    optArea.appendChild(lblUnchecked);
+
+    row3.appendChild(filterInput);
+    row3.appendChild(optArea);
+
+    // ----------------------------------------------------
+    // 【4段目】OR検索 / AND検索 セレクト
+    // ----------------------------------------------------
+    const row4 = document.createElement('div');
+    row4.style.marginBottom = '8px';
 
     const modeToggle = document.createElement('select');
     modeToggle.className = 'gaia-ui-input';
-    modeToggle.style.height = '30px';
+    modeToggle.style.width = '100%';
+    modeToggle.style.height = '32px';
+
     [['OR', 'OR検索（いずれかに一致）'], ['AND', 'AND検索（すべてに一致）']].forEach(([m, text]) => {
       const opt = document.createElement('option');
       opt.value = m;
@@ -346,91 +435,92 @@
       modeToggle.appendChild(opt);
     });
 
-    // デフォルトは OR
     modeToggle.value = localStorage.getItem(MODE_STORAGE_KEY) || 'OR';
     modeToggle.onchange = () => {
       localStorage.setItem(MODE_STORAGE_KEY, modeToggle.value);
     };
 
-    modeSettingArea.appendChild(modeLabel);
-    modeSettingArea.appendChild(modeToggle);
+    row4.appendChild(modeToggle);
 
-    // --- 2行目: プリセット選択（左） + フィールド絞り込み入力（右） ---
-    const topControlRow = document.createElement('div');
-    topControlRow.style.display = 'flex';
-    topControlRow.style.gap = '6px';
-    topControlRow.style.marginBottom = '8px';
-
-    const presetSelect = document.createElement('select');
-    presetSelect.className = 'gaia-ui-input';
-    presetSelect.style.flex = '1';
-    presetSelect.style.height = '34px';
-
-    const filterInput = document.createElement('input');
-    filterInput.placeholder = 'フィールド検索';
-    filterInput.className = 'gaia-ui-input';
-    filterInput.style.flex = '1';
-    filterInput.style.height = '34px';
-
-    topControlRow.appendChild(presetSelect);
-    topControlRow.appendChild(filterInput);
-
-    // --- 3行目: 操作ボタン群 ---
-    const btnRow = document.createElement('div');
-    btnRow.style.marginBottom = '8px';
-
-    const btnAll = createButton('全選択');
-    const btnNone = createButton('全解除');
-    const btnReset = createButton('初期状態');
-    const btnSavePreset = createButton('保存');
-    const btnDeletePreset = createButton('削除');
-
-    btnRow.appendChild(btnAll);
-    btnRow.appendChild(btnNone);
-    btnRow.appendChild(btnReset);
-    btnRow.appendChild(btnSavePreset);
-    btnRow.appendChild(btnDeletePreset);
-
-    // --- フィールドリスト表示部 ---
+    // ----------------------------------------------------
+    // 【リスト表示エリア】
+    // ----------------------------------------------------
     const listArea = document.createElement('div');
     listArea.style.border = '1px solid #ddd';
     listArea.style.padding = '6px';
-    listArea.style.maxHeight = '280px';
+    listArea.style.maxHeight = '230px';
     listArea.style.overflowY = 'auto';
 
-    function renderList(filter = '') {
+    function renderList() {
+      const filterText = filterInput.value || '';
       listArea.innerHTML = '';
 
-      ALL_FIELDS
-        .filter(f => f.label.includes(filter))
-        .forEach(f => {
-          const label = document.createElement('label');
-          label.style.display = 'block';
-          label.style.margin = '3px 0';
-          label.style.cursor = 'pointer';
+      // 1. コピーを作成
+      let targetList = [...ALL_FIELDS];
 
-          const cb = document.createElement('input');
-          cb.type = 'checkbox';
-          cb.value = f.code;
-          cb.checked = SELECTED_FIELDS.includes(f.code);
-          cb.onchange = updateSelectedFields;
+      // 2. ソート判定（有効時は五十音・アルファベット順、無効時は元のフォーム定義順）
+      if (cbSort.checked) {
+        targetList.sort((a, b) => a.label.localeCompare(b.label, 'ja'));
+      }
 
-          label.appendChild(cb);
-          label.appendChild(document.createTextNode(' ' + f.label));
-          listArea.appendChild(label);
-        });
+      // 3. 絞り込み条件（テキスト、チェック状態）
+      targetList = targetList.filter(f => {
+        // キーワード絞り込み
+        if (filterText && !f.label.includes(filterText)) {
+          return false;
+        }
+        // チェック有のみ
+        if (cbChecked.checked && !SELECTED_FIELDS.includes(f.code)) {
+          return false;
+        }
+        // 未チェックのみ
+        if (cbUnchecked.checked && SELECTED_FIELDS.includes(f.code)) {
+          return false;
+        }
+        return true;
+      });
+
+      // 4. 描画
+      targetList.forEach(f => {
+        const label = document.createElement('label');
+        label.style.display = 'block';
+        label.style.margin = '3px 0';
+        label.style.cursor = 'pointer';
+
+        const cb = document.createElement('input');
+        cb.type = 'checkbox';
+        cb.value = f.code;
+        cb.checked = SELECTED_FIELDS.includes(f.code);
+        cb.onchange = updateSelectedFields;
+
+        label.appendChild(cb);
+        label.appendChild(document.createTextNode(' ' + f.label));
+        listArea.appendChild(label);
+      });
     }
-
-    filterInput.oninput = () => renderList(filterInput.value);
 
     function saveFields() {
       localStorage.setItem(FIELD_STORAGE_KEY, JSON.stringify(SELECTED_FIELDS));
     }
 
     function updateSelectedFields() {
-      const checks = listArea.querySelectorAll('input:checked');
-      SELECTED_FIELDS = Array.from(checks).map(cb => cb.value);
+      const checks = listArea.querySelectorAll('input[type="checkbox"]:checked');
+      const currentListCodes = Array.from(listArea.querySelectorAll('input[type="checkbox"]')).map(cb => cb.value);
+
+      // 表示外のチェック済み項目を維持しながら更新
+      const uncheckedInView = currentListCodes.filter(code => !Array.from(checks).some(cb => cb.value === code));
+      SELECTED_FIELDS = SELECTED_FIELDS.filter(code => !uncheckedInView.includes(code));
+
+      Array.from(checks).forEach(cb => {
+        if (!SELECTED_FIELDS.includes(cb.value)) {
+          SELECTED_FIELDS.push(cb.value);
+        }
+      });
+
       saveFields();
+      if (cbChecked.checked || cbUnchecked.checked) {
+        renderList();
+      }
     }
 
     function initSelected() {
@@ -447,13 +537,13 @@
     btnAll.onclick = () => {
       SELECTED_FIELDS = ALL_FIELDS.map(f => f.code);
       saveFields();
-      renderList(filterInput.value);
+      renderList();
     };
 
     btnNone.onclick = () => {
       SELECTED_FIELDS = [];
       saveFields();
-      renderList(filterInput.value);
+      renderList();
     };
 
     btnReset.onclick = () => {
@@ -461,22 +551,29 @@
         .filter(f => isDefaultChecked(f))
         .map(f => f.code);
       saveFields();
-      renderList(filterInput.value);
+      renderList();
     };
 
-    // プリセット保存時、選択中のプリセット名を初期表示
+    // プリセット保存（AND/OR設定も一緒に保持）
     btnSavePreset.onclick = () => {
       const defaultName = presetSelect.value || '';
       const name = prompt('プリセット名', defaultName);
       if (!name) return;
 
       const presets = JSON.parse(localStorage.getItem(PRESET_STORAGE_KEY) || '{}');
-      presets[name] = SELECTED_FIELDS;
+      presets[name] = {
+        fields: SELECTED_FIELDS,
+        mode: modeToggle.value
+      };
+
       localStorage.setItem(PRESET_STORAGE_KEY, JSON.stringify(presets));
+      localStorage.setItem(CURRENT_PRESET_KEY, name);
       refreshPresets();
       presetSelect.value = name;
+      updateButtonTooltip();
     };
 
+    // プリセット削除
     btnDeletePreset.onclick = () => {
       const name = presetSelect.value;
       if (!name) return;
@@ -484,11 +581,16 @@
       const presets = JSON.parse(localStorage.getItem(PRESET_STORAGE_KEY) || '{}');
       delete presets[name];
       localStorage.setItem(PRESET_STORAGE_KEY, JSON.stringify(presets));
+
+      if (localStorage.getItem(CURRENT_PRESET_KEY) === name) {
+        localStorage.removeItem(CURRENT_PRESET_KEY);
+      }
       refreshPresets();
+      updateButtonTooltip();
     };
 
     function refreshPresets() {
-      const currentVal = presetSelect.value;
+      const currentVal = presetSelect.value || localStorage.getItem(CURRENT_PRESET_KEY) || '';
       const presets = JSON.parse(localStorage.getItem(PRESET_STORAGE_KEY) || '{}');
       presetSelect.innerHTML = '<option value="">プリセット選択</option>';
 
@@ -504,22 +606,44 @@
       }
     }
 
+    // プリセット切り替え時（フィールドおよび AND/OR モードを反映）
     presetSelect.onchange = () => {
+      const selName = presetSelect.value;
       const presets = JSON.parse(localStorage.getItem(PRESET_STORAGE_KEY) || '{}');
-      SELECTED_FIELDS = presets[presetSelect.value] || [];
+      const target = presets[selName];
+
+      if (target) {
+        if (Array.isArray(target)) {
+          // 過去バージョン互換
+          SELECTED_FIELDS = target;
+        } else {
+          SELECTED_FIELDS = target.fields || [];
+          if (target.mode) {
+            modeToggle.value = target.mode;
+            localStorage.setItem(MODE_STORAGE_KEY, target.mode);
+          }
+        }
+        localStorage.setItem(CURRENT_PRESET_KEY, selName);
+      } else {
+        localStorage.removeItem(CURRENT_PRESET_KEY);
+      }
+
       saveFields();
-      renderList(filterInput.value);
+      renderList();
+      updateButtonTooltip();
     };
 
-    // モーダルへ配置
-    modalBody.appendChild(modeSettingArea);
-    modalBody.appendChild(topControlRow);
-    modalBody.appendChild(btnRow);
+    // モーダルへ部品を追加
+    modalBody.appendChild(row1);
+    modalBody.appendChild(row2);
+    modalBody.appendChild(row3);
+    modalBody.appendChild(row4);
     modalBody.appendChild(listArea);
 
     initSelected();
     renderList();
     refreshPresets();
+    updateButtonTooltip();
 
     // 検索ワード復元
     const lastWord = localStorage.getItem(LAST_WORD_KEY);
@@ -535,7 +659,6 @@
         setTimeout(() => {
           input.setSelectionRange(input.value.length, input.value.length);
         }, 50);
-
         setTimeout(() => {
           const url = new URL(location.href);
           url.searchParams.delete('focusK');
@@ -549,7 +672,10 @@
     const btn = document.createElement('button');
     btn.textContent = text;
     btn.className = 'gaia-ui-actionmenu-save';
-    btn.style.margin = '2px';
+    btn.style.margin = '0px';
+    btn.style.padding = '0 8px';
+    btn.style.height = '34px';
+    btn.style.boxSizing = 'border-box';
     return btn;
   }
 
