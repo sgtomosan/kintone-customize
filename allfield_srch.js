@@ -677,7 +677,7 @@
     btn.textContent = text;
     btn.className = 'gaia-ui-actionmenu-save';
     btn.style.margin = '0px';
-    btn.style.padding = '0 8px';
+    btn.style.padding = '0 8px 3px 8px';
     btn.style.height = '34px';
     btn.style.boxSizing = 'border-box';
     return btn;
