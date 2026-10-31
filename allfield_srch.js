@@ -257,10 +257,12 @@
 
     const btnOpen = createButton('検索設定');
     btnOpen.style.height = '42px';
-    btnOpen.style.width = '80px';
-    btnOpen.style.padding = '0 16px 2px 16px';
+    btnOpen.style.width = 'auto';              // ★ここを 'auto' にして固定幅を解除
+    btnOpen.style.minWidth = '80px';           // ★最低幅を確保
+    btnOpen.style.padding = '0 8px 2px 8px'; // ★左右にゆとりを持たせる
     btnOpen.style.margin = '0 0 0 6px';
     btnOpen.style.verticalAlign = 'top';
+    
 
     space.appendChild(input);
     space.appendChild(btnOpen);
