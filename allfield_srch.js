@@ -1,7 +1,7 @@
 (function () {
   'use strict';
 
-  console.log('検索UI 真・最終完全版 (拡張レイアウト対応)');
+  console.log('検索UI 真・最終完全版 (拡張レイアウト対応・幅最適化版)');
 
   const APP_ID = kintone.app.getId();
 
@@ -59,11 +59,13 @@
     const modal = document.createElement('div');
     const savedPos = JSON.parse(localStorage.getItem(MODAL_POS_KEY) || 'null');
 
+    // 枠内に綺麗に収まる適正幅（440px）に設定
     Object.assign(modal.style, {
       position: 'fixed',
       top: savedPos ? savedPos.top : '100px',
       left: savedPos ? savedPos.left : '100px',
-      width: '460px',
+      width: '440px',
+      boxSizing: 'border-box',
       background: '#fff',
       border: '1px solid #ccc',
       zIndex: 9999,
@@ -74,7 +76,6 @@
     const header = document.createElement('div');
     header.textContent = '検索設定';
     Object.assign(header.style, {
-      width: '80px',
       padding: '6px 10px',
       background: '#eee',
       cursor: 'move',
@@ -98,8 +99,10 @@
     // ===== 本体 =====
     const body = document.createElement('div');
     body.style.padding = '10px';
+    body.style.boxSizing = 'border-box';
     body.style.maxHeight = '480px';
-    body.style.overflow = 'auto';
+    body.style.overflowY = 'auto';
+    body.style.overflowX = 'hidden'; // 横スクロールの発生を抑止
     modal.appendChild(body);
 
     // ===== ドラッグ移動 =====
@@ -253,15 +256,15 @@
     input.style.height = '42px';
 
     const btnOpen = createButton('検索設定');
-    btnOpen.style.height = '46px';
-    btnOpen.style.padding = '0 16px';
+    btnOpen.style.height = '42px';
+    btnOpen.style.width = 'auto';
+    btnOpen.style.padding = '0 16px 2px 16px';
     btnOpen.style.margin = '0 0 0 6px';
     btnOpen.style.verticalAlign = 'top';
-    
+
     space.appendChild(input);
     space.appendChild(btnOpen);
 
-    // 検索処理
     const search = (word) => {
       const raw = normalize(word);
       const viewId = getViewId();
@@ -294,7 +297,6 @@
 
     createSuggestBox(input, search);
 
-    // モーダル設定
     const modalBody = createModal();
     modalBody.parentNode.style.display = 'none';
 
@@ -303,7 +305,6 @@
       modal.style.display = modal.style.display === 'none' ? 'block' : 'none';
     };
 
-    // ツールチップ更新関数
     function updateButtonTooltip() {
       const currentName = localStorage.getItem(CURRENT_PRESET_KEY);
       if (currentName) {
@@ -314,41 +315,53 @@
     }
 
     // ----------------------------------------------------
-    // 【1段目】プリセット選択 / 保存 / 削除
+    // 【1段目】プリセット選択(1.2倍) / 保存(1倍) / 削除(1倍)
     // ----------------------------------------------------
     const row1 = document.createElement('div');
     row1.style.display = 'flex';
     row1.style.gap = '6px';
     row1.style.marginBottom = '6px';
+    row1.style.width = '100%';
 
     const presetSelect = document.createElement('select');
     presetSelect.className = 'gaia-ui-input';
-    presetSelect.style.flex = '1';
+    presetSelect.style.flex = '1.3';
     presetSelect.style.height = '34px';
+    presetSelect.style.boxSizing = 'border-box';
+    presetSelect.style.minWidth = '0';
 
     const btnSavePreset = createButton('保存');
     btnSavePreset.style.flex = '1';
+    btnSavePreset.style.minWidth = '0';
+
     const btnDeletePreset = createButton('削除');
     btnDeletePreset.style.flex = '1';
+    btnDeletePreset.style.minWidth = '0';
 
     row1.appendChild(presetSelect);
     row1.appendChild(btnSavePreset);
     row1.appendChild(btnDeletePreset);
 
     // ----------------------------------------------------
-    // 【2段目】全選択 / 全解除 / 初期状態
+    // 【2段目】全選択 / 全解除 / 初期状態（3等分均等）
     // ----------------------------------------------------
     const row2 = document.createElement('div');
     row2.style.display = 'flex';
     row2.style.gap = '6px';
     row2.style.marginBottom = '8px';
+    row2.style.width = '100%';
 
     const btnAll = createButton('全選択');
     btnAll.style.flex = '1';
+    btnAll.style.minWidth = '0';
+
     const btnNone = createButton('全解除');
     btnNone.style.flex = '1';
+    btnNone.style.minWidth = '0';
+
     const btnReset = createButton('初期状態');
     btnReset.style.flex = '1';
+    btnReset.style.minWidth = '0';
 
     row2.appendChild(btnAll);
     row2.appendChild(btnNone);
@@ -360,47 +373,56 @@
     const row3 = document.createElement('div');
     row3.style.display = 'flex';
     row3.style.alignItems = 'center';
-    row3.style.gap = '8px';
+    row3.style.gap = '6px';
     row3.style.marginBottom = '6px';
+    row3.style.width = '100%';
 
     const filterInput = document.createElement('input');
     filterInput.placeholder = 'フィールド検索';
     filterInput.className = 'gaia-ui-input';
     filterInput.style.flex = '1';
+    filterInput.style.minWidth = '110px';
     filterInput.style.height = '32px';
+    filterInput.style.boxSizing = 'border-box';
 
     const optArea = document.createElement('div');
     optArea.style.display = 'flex';
     optArea.style.alignItems = 'center';
-    optArea.style.gap = '6px';
+    optArea.style.gap = '5px';
     optArea.style.fontSize = '12px';
     optArea.style.whiteSpace = 'nowrap';
+    optArea.style.flexShrink = '0';
 
     // ソート
     const cbSort = document.createElement('input');
     cbSort.type = 'checkbox';
     cbSort.id = 'cb_search_sort';
+    cbSort.style.margin = '0 2px 0 0';
     const lblSort = document.createElement('label');
     lblSort.htmlFor = 'cb_search_sort';
     lblSort.textContent = 'ソート';
+    lblSort.style.cursor = 'pointer';
 
     // チェック有
     const cbChecked = document.createElement('input');
     cbChecked.type = 'checkbox';
     cbChecked.id = 'cb_search_checked';
+    cbChecked.style.margin = '0 2px 0 0';
     const lblChecked = document.createElement('label');
     lblChecked.htmlFor = 'cb_search_checked';
     lblChecked.textContent = 'チェック有';
+    lblChecked.style.cursor = 'pointer';
 
     // 未チェック
     const cbUnchecked = document.createElement('input');
     cbUnchecked.type = 'checkbox';
     cbUnchecked.id = 'cb_search_unchecked';
+    cbUnchecked.style.margin = '0 2px 0 0';
     const lblUnchecked = document.createElement('label');
     lblUnchecked.htmlFor = 'cb_search_unchecked';
     lblUnchecked.textContent = '未チェック';
+    lblUnchecked.style.cursor = 'pointer';
 
-    // 「チェック有」と「未チェック」は排他
     cbChecked.onchange = () => {
       if (cbChecked.checked) cbUnchecked.checked = false;
       renderList();
@@ -427,11 +449,13 @@
     // ----------------------------------------------------
     const row4 = document.createElement('div');
     row4.style.marginBottom = '8px';
+    row4.style.width = '100%';
 
     const modeToggle = document.createElement('select');
     modeToggle.className = 'gaia-ui-input';
     modeToggle.style.width = '100%';
     modeToggle.style.height = '32px';
+    modeToggle.style.boxSizing = 'border-box';
 
     [['OR', 'OR検索（いずれかに一致）'], ['AND', 'AND検索（すべてに一致）']].forEach(([m, text]) => {
       const opt = document.createElement('option');
@@ -453,39 +477,27 @@
     const listArea = document.createElement('div');
     listArea.style.border = '1px solid #ddd';
     listArea.style.padding = '6px';
-    listArea.style.maxHeight = '330px';
+    listArea.style.maxHeight = '280px';
     listArea.style.overflowY = 'auto';
+    listArea.style.boxSizing = 'border-box';
 
     function renderList() {
       const filterText = filterInput.value || '';
       listArea.innerHTML = '';
 
-      // 1. コピーを作成
       let targetList = [...ALL_FIELDS];
 
-      // 2. ソート判定（有効時は五十音・アルファベット順、無効時は元のフォーム定義順）
       if (cbSort.checked) {
         targetList.sort((a, b) => a.label.localeCompare(b.label, 'ja'));
       }
 
-      // 3. 絞り込み条件（テキスト、チェック状態）
       targetList = targetList.filter(f => {
-        // キーワード絞り込み
-        if (filterText && !f.label.includes(filterText)) {
-          return false;
-        }
-        // チェック有のみ
-        if (cbChecked.checked && !SELECTED_FIELDS.includes(f.code)) {
-          return false;
-        }
-        // 未チェックのみ
-        if (cbUnchecked.checked && SELECTED_FIELDS.includes(f.code)) {
-          return false;
-        }
+        if (filterText && !f.label.includes(filterText)) return false;
+        if (cbChecked.checked && !SELECTED_FIELDS.includes(f.code)) return false;
+        if (cbUnchecked.checked && SELECTED_FIELDS.includes(f.code)) return false;
         return true;
       });
 
-      // 4. 描画
       targetList.forEach(f => {
         const label = document.createElement('label');
         label.style.display = 'block';
@@ -512,7 +524,6 @@
       const checks = listArea.querySelectorAll('input[type="checkbox"]:checked');
       const currentListCodes = Array.from(listArea.querySelectorAll('input[type="checkbox"]')).map(cb => cb.value);
 
-      // 表示外のチェック済み項目を維持しながら更新
       const uncheckedInView = currentListCodes.filter(code => !Array.from(checks).some(cb => cb.value === code));
       SELECTED_FIELDS = SELECTED_FIELDS.filter(code => !uncheckedInView.includes(code));
 
@@ -559,7 +570,6 @@
       renderList();
     };
 
-    // プリセット保存（AND/OR設定も一緒に保持）
     btnSavePreset.onclick = () => {
       const defaultName = presetSelect.value || '';
       const name = prompt('プリセット名', defaultName);
@@ -578,7 +588,6 @@
       updateButtonTooltip();
     };
 
-    // プリセット削除
     btnDeletePreset.onclick = () => {
       const name = presetSelect.value;
       if (!name) return;
@@ -611,7 +620,6 @@
       }
     }
 
-    // プリセット切り替え時（フィールドおよび AND/OR モードを反映）
     presetSelect.onchange = () => {
       const selName = presetSelect.value;
       const presets = JSON.parse(localStorage.getItem(PRESET_STORAGE_KEY) || '{}');
@@ -619,7 +627,6 @@
 
       if (target) {
         if (Array.isArray(target)) {
-          // 過去バージョン互換
           SELECTED_FIELDS = target;
         } else {
           SELECTED_FIELDS = target.fields || [];
@@ -638,7 +645,6 @@
       updateButtonTooltip();
     };
 
-    // モーダルへ部品を追加
     modalBody.appendChild(row1);
     modalBody.appendChild(row2);
     modalBody.appendChild(row3);
@@ -650,13 +656,11 @@
     refreshPresets();
     updateButtonTooltip();
 
-    // 検索ワード復元
     const lastWord = localStorage.getItem(LAST_WORD_KEY);
     if (lastWord) {
       input.value = lastWord;
     }
 
-    // フォーカス制御
     const focusFlag = new URLSearchParams(location.search).get('focusK') === '1';
     setTimeout(() => {
       if (focusFlag) {
@@ -673,16 +677,17 @@
     }, 500);
   }
 
+  // ボタン生成（中央揃え・上方向持ち上げ調整・枠崩れ防止）
   function createButton(text) {
     const btn = document.createElement('button');
     btn.textContent = text;
     btn.className = 'gaia-ui-actionmenu-save';
     btn.style.margin = '0px';
-    btn.style.padding = '0 8px 3px 8px';
+    btn.style.padding = '0 4px 4px 4px'; // 下側にパディングを設けて文字を上へ持ち上げる
     btn.style.height = '34px';
-    btn.style.width = '80px';
     btn.style.boxSizing = 'border-box';
-// 上下左右の中央揃えを強制
+    btn.style.cursor = 'pointer';
+
     btn.style.display = 'inline-flex';
     btn.style.alignItems = 'center';
     btn.style.justifyContent = 'center';
