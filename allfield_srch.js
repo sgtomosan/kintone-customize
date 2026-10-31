@@ -257,7 +257,7 @@
 
     const btnOpen = createButton('検索設定');
     btnOpen.style.height = '42px';
-    btnOpen.style.width = 'auto';
+    btnOpen.style.width = '80px';
     btnOpen.style.padding = '0 16px 2px 16px';
     btnOpen.style.margin = '0 0 0 6px';
     btnOpen.style.verticalAlign = 'top';
