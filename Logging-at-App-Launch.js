@@ -17,7 +17,7 @@
   const appId = kintone.app.getId();
 
   // APIトークン（アプリ7）
-  const API_TOKEN =  window.APIKEY(TARGET_APP_ID);
+  const API_TOKEN = window.APIKEY(TARGET_APP_ID);
 
   // localStorageキー
   const STORAGE_KEY = 'target_user_cache_complete';
@@ -69,27 +69,23 @@
   // =========================
 
   async function appendOperatorToUserField(operator, appId) {
-
-console.log('関数内 appId=', appId);
+    console.log('関数内 appId=', appId);
     if (!operator) return;
-  // 更新対象レコード条件
-  // ※ KEYフィールド等で1件固定推奨
-//  const TARGET_QUERY = 'KEY = "管理"';
-	const TARGET_QUERY = `appId = ${appId}`;
+
+    const TARGET_QUERY = `appId = ${appId}`;
 
     try {
-
       // レコード取得
-const getResp = await fetch(
-  kintone.api.url('/k/v1/records', true) +
-  `?app=${TARGET_APP_ID}&query=${encodeURIComponent(TARGET_QUERY)}`,
-  {
-    method: 'GET',
-    headers: {
-      'X-Cybozu-API-Token': API_TOKEN
-    }
-  }
-);
+      const getResp = await fetch(
+        kintone.api.url('/k/v1/records', true) +
+        `?app=${TARGET_APP_ID}&query=${encodeURIComponent(TARGET_QUERY)}`,
+        {
+          method: 'GET',
+          headers: {
+            'X-Cybozu-API-Token': API_TOKEN
+          }
+        }
+      );
 
       const getData = await getResp.json();
 
@@ -154,12 +150,10 @@ const getResp = await fetch(
       console.log('利用者更新成功:', newValue);
 
     } catch (err) {
-
       console.error(
         '利用者更新例外',
         JSON.stringify(err, null, 2)
       );
-
     }
   }
 
@@ -167,12 +161,9 @@ const getResp = await fetch(
   // イベント
   // =========================
 
-//    'app.record.create.show',
-//    'app.record.edit.show',
-//    'app.record.detail.show'
   kintone.events.on([
-    'app.record.index.show'
-
+    'app.record.index.show',
+    'app.record.detail.show'
   ], function (event) {
 
     const now = new Date();
@@ -197,6 +188,17 @@ const getResp = await fetch(
     const appId = kintone.app.getId();
     const eventType = event.type;
 
+    // 現在のURL
+    const currentUrl = window.location.href;
+
+    // 画面種別に応じた「内容」の組み立て
+    let logContent = '起動';
+    if (eventType === 'app.record.index.show') {
+      logContent = `一覧（${currentUrl}）`;
+    } else if (eventType === 'app.record.detail.show') {
+      logContent = `詳細（${currentUrl}）`;
+    }
+
     // ミリ秒
     const ms = ('00' + now.getMilliseconds()).slice(-3);
 
@@ -205,7 +207,7 @@ const getResp = await fetch(
       // =========================
       // 利用者更新
       // =========================
-console.log('呼び出し前 appId=', appId);
+      console.log('呼び出し前 appId=', appId);
       appendOperatorToUserField(operator, appId);
 
       // =========================
@@ -245,7 +247,7 @@ console.log('呼び出し前 appId=', appId);
           },
 
           '内容': {
-            value: '起動'
+            value: logContent
           },
 
           '登録日': {
@@ -274,17 +276,13 @@ console.log('呼び出し前 appId=', appId);
         body
       )
       .then(function (resp) {
-
         console.log('ログ記録成功 V001', resp);
-
       })
       .catch(function (error) {
-
         console.error(
           'ログ記録失敗',
           JSON.stringify(error, null, 2)
         );
-
       });
 
       return event;
