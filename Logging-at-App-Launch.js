@@ -192,7 +192,7 @@
     const currentUrl = window.location.href;
 
     // 画面種別に応じた「内容」の組み立て
-    let logContent = '起動';
+    let logContent = `起動（${currentUrl}）`;
     if (eventType === 'app.record.index.show') {
       logContent = `一覧（${currentUrl}）`;
     } else if (eventType === 'app.record.detail.show') {
@@ -276,7 +276,7 @@
         body
       )
       .then(function (resp) {
-        console.log('ログ記録成功 V001', resp);
+        console.log('ログ記録成功 V002', resp);
       })
       .catch(function (error) {
         console.error(
