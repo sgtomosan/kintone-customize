@@ -275,7 +275,7 @@ console.log('呼び出し前 appId=', appId);
       )
       .then(function (resp) {
 
-        console.log('ログ記録成功', resp);
+        console.log('ログ記録成功 V001', resp);
 
       })
       .catch(function (error) {
