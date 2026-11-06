@@ -17,7 +17,7 @@
 const appId = kintone.app.getId();
 
   // APIトークン（アプリ7）
-  const API_TOKEN = 'RyWpKwzTnO0dDavyvKMiqcMK4PO0sqkoWwxPKDrk';
+  const API_TOKEN = 'xxxxxx';
 
   // localStorageキー
   const STORAGE_KEY = 'target_user_cache_complete';
