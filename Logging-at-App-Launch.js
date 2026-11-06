@@ -14,10 +14,10 @@
   // 利用者フィールド
   const USER_FIELD_CODE = '利用者';
 
-const appId = kintone.app.getId();
+  const appId = kintone.app.getId();
 
   // APIトークン（アプリ7）
-  const API_TOKEN = 'xxxxxx';
+  const API_TOKEN =  window.APIKEY(TARGET_APP_ID);
 
   // localStorageキー
   const STORAGE_KEY = 'target_user_cache_complete';
